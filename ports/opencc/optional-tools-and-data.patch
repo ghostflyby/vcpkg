@@ -1,0 +1,45 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 7a7aa06..d13e256 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -49,6 +49,8 @@ option(BUILD_SHARED_LIBS "Build opencc as shared library" ${_OPENCC_DEFAULT_BUIL
+ option(OPENCC_ENABLE_INSTALL "Generate install targets" ${_OPENCC_DEFAULT_ENABLE_INSTALL})
+ option(ENABLE_GTEST "Build all tests." OFF)
+ option(ENABLE_BENCHMARK "Build benchmark tests." OFF)
++option(BUILD_TOOLS "Build OpenCC command-line tools" ON)
++option(BUILD_DATA "Build OpenCC dictionary data" ON)
+ # Top-level macOS builds enable the Jieba plugin by default so package
+ # managers that build with default options (e.g. Homebrew) ship it. Other
+ # platforms and subproject builds (FetchContent / add_subdirectory) keep it
+@@ -362,13 +364,18 @@ endif()
+ 
+ ######## Subdirectories
+ 
++if(BUILD_DATA AND NOT BUILD_TOOLS)
++  message(FATAL_ERROR "BUILD_DATA requires BUILD_TOOLS.")
++endif()
+ add_subdirectory(src)
+ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/doc/CMakeLists.txt")
+   add_subdirectory(doc)
+ elseif(BUILD_DOCUMENTATION)
+   message(FATAL_ERROR "BUILD_DOCUMENTATION requires the doc source directory.")
+ endif()
+-add_subdirectory(data)
++if(BUILD_DATA)
++  add_subdirectory(data)
++endif()
+ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/plugins/CMakeLists.txt")
+   add_subdirectory(plugins)
+ elseif(BUILD_OPENCC_JIEBA_PLUGIN)
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 1753830..1211dfc 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -255,4 +255,6 @@ endif()
+ 
+ # Subdir
+ 
+-add_subdirectory(tools)
++if(BUILD_TOOLS)
++  add_subdirectory(tools)
++endif()
